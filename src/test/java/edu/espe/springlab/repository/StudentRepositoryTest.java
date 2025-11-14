@@ -28,7 +28,7 @@ class StudentRepositoryTest {
     }
 
     // -------------------------------------------------------
-    // 1. SAVE + FIND BY EMAIL
+    // 1. SAVE
     // -------------------------------------------------------
     @Test
     void shouldSaveStudent() {
@@ -37,6 +37,16 @@ class StudentRepositoryTest {
         assertThat(saved.getId()).isNotNull();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Falta verificar ID
+    void saveWithoutAssertions() {
+        repo.save(build("Name", "email@test.com", true));
+    }
+    */
+
+    // -------------------------------------------------------
+    // 2. FIND BY EMAIL
+    // -------------------------------------------------------
     @Test
     void shouldSaveAndFindByEmail() {
         repo.save(build("Maria Lopez", "maria@test.com", true));
@@ -47,8 +57,15 @@ class StudentRepositoryTest {
         assertThat(result.get().getFullName()).isEqualTo("Maria Lopez");
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Busca un email que nunca se guardó
+    void wrongFindByEmail() {
+        assertThat(repo.findByEmail("wrong@mail.com")).isPresent();
+    }
+    */
+
     // -------------------------------------------------------
-    // 2. EXISTENCIA POR EMAIL
+    // 3. EXISTS BY EMAIL
     // -------------------------------------------------------
     @Test
     void shouldReturnTrueIfEmailExists() {
@@ -57,13 +74,27 @@ class StudentRepositoryTest {
         assertThat(repo.existsByEmail("exists@test.com")).isTrue();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Asume que siempre existe
+    void wrongExistsByEmail() {
+        assertThat(repo.existsByEmail("nope@mail.com")).isTrue();
+    }
+    */
+
     @Test
     void shouldReturnFalseIfEmailDoesNotExist() {
         assertThat(repo.existsByEmail("no@test.com")).isFalse();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → No se valida nada
+    void wrongExistsWithoutAssert() {
+        repo.existsByEmail("anything@mail.com");
+    }
+    */
+
     // -------------------------------------------------------
-    // 3. FIND BY ID
+    // 4. FIND BY ID
     // -------------------------------------------------------
     @Test
     void shouldFindById() {
@@ -75,14 +106,27 @@ class StudentRepositoryTest {
         assertThat(found.get().getEmail()).isEqualTo("ana@test.com");
     }
 
+    /*
+    @Test // ❌ INCORRECTO → ID inexistente pero espera resultado
+    void wrongFindById() {
+        assertThat(repo.findById(999L)).isPresent();
+    }
+    */
+
     @Test
     void shouldReturnEmptyIfNotFoundById() {
-        var result = repo.findById(999L);
-        assertThat(result).isNotPresent();
+        assertThat(repo.findById(999L)).isNotPresent();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Debería ser notPresent()
+    void wrongAssertPresent() {
+        assertThat(repo.findById(999L)).isPresent();
+    }
+    */
+
     // -------------------------------------------------------
-    // 4. FIND ALL
+    // 5. FIND ALL
     // -------------------------------------------------------
     @Test
     void shouldFindAllStudents() {
@@ -94,14 +138,27 @@ class StudentRepositoryTest {
         assertThat(list).hasSize(2);
     }
 
+    /*
+    @Test // ❌ INCORRECTO → No verifica el tamaño
+    void wrongFindAll() {
+        repo.findAll();
+    }
+    */
+
     @Test
     void shouldReturnEmptyListIfNoStudents() {
-        List<Student> list = repo.findAll();
-        assertThat(list).isEmpty();
+        assertThat(repo.findAll()).isEmpty();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Debería ser empty, no size 1
+    void wrongEmptyList() {
+        assertThat(repo.findAll()).hasSize(1);
+    }
+    */
+
     // -------------------------------------------------------
-    // 5. DELETE BY ID
+    // 6. DELETE
     // -------------------------------------------------------
     @Test
     void shouldDeleteById() {
@@ -112,8 +169,15 @@ class StudentRepositoryTest {
         assertThat(repo.findById(s.getId())).isNotPresent();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → No se elimina nada
+    void wrongDeleteWithoutSaving() {
+        repo.deleteById(1L);
+    }
+    */
+
     // -------------------------------------------------------
-    // 6. UNIQUE EMAIL
+    // 7. UNIQUE EMAIL
     // -------------------------------------------------------
     @Test
     void shouldNotAllowDuplicatedEmail() {
@@ -125,7 +189,13 @@ class StudentRepositoryTest {
                 .isInstanceOf(Exception.class);
     }
 
-
+    /*
+    @Test // ❌ INCORRECTO → Aquí no hacemos flush y podría NO fallar
+    void wrongDuplicateTest() {
+        repo.save(build("A", "x@test.com", true));
+        repo.save(build("B", "x@test.com", true)); // Esto a veces NO lanza error
+    }
+    */
 
     // -------------------------------------------------------
     // 8. VALIDACIONES DE CAMPOS NULL
@@ -138,6 +208,13 @@ class StudentRepositoryTest {
                 .isInstanceOf(Exception.class);
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Sí guarda, pero no se valida nada
+    void wrongNullName() {
+        repo.save(build(null, "x@test.com", true));
+    }
+    */
+
     @Test
     void shouldFailWhenEmailIsNull() {
         Student s = build("Sin Nombre", null, true);
@@ -146,8 +223,15 @@ class StudentRepositoryTest {
                 .isInstanceOf(Exception.class);
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Espera que exista
+    void wrongNullEmail() {
+        assertThat(repo.save(build("A", null, true)).getEmail()).isNotNull();
+    }
+    */
+
     // -------------------------------------------------------
-    // 9. EMAIL LENGTH > 120 (rompe la BD)
+    // 9. CAMPOS MUY LARGOS
     // -------------------------------------------------------
     @Test
     void shouldFailWithLongEmail() {
@@ -159,9 +243,13 @@ class StudentRepositoryTest {
                 .isInstanceOf(Exception.class);
     }
 
-    // -------------------------------------------------------
-    // 10. NOMBRE LENGTH > 120
-    // -------------------------------------------------------
+    /*
+    @Test // ❌ INCORRECTO → Ignora las reglas de longitud
+    void wrongEmailLength() {
+        repo.save(build("User", "a".repeat(200), true));
+    }
+    */
+
     @Test
     void shouldFailWithLongName() {
         String longName = "x".repeat(200);
@@ -172,22 +260,43 @@ class StudentRepositoryTest {
                 .isInstanceOf(Exception.class);
     }
 
+    /*
+    @Test // ❌ INCORRECTO → Este nombre debería fallar
+    void wrongNameLength() {
+        repo.save(build("x".repeat(200), "test@mail.com", true));
+    }
+    */
+
     // -------------------------------------------------------
-    // 11. TEST DE DOBLE GUARDADO (simula un update)
+    // 10. UPDATE (TEST COMPLETO)
     // -------------------------------------------------------
     @Test
-    void shouldUpdateStudent() {
+    void shouldUpdateStudentCorrectly() {
         Student s = repo.save(build("Original", "update@test.com", true));
 
         s.setFullName("Updated Name");
+        s.setEmail("updated@test.com");
+        s.setActive(false);
 
-        Student updated = repo.save(s);
+        Student updated = repo.saveAndFlush(s);
 
         assertThat(updated.getFullName()).isEqualTo("Updated Name");
+        assertThat(updated.getEmail()).isEqualTo("updated@test.com");
+        assertThat(updated.getActive()).isFalse();
     }
 
+    /*
+    @Test // ❌ INCORRECTO → No actualiza nada
+    void wrongUpdate() {
+        Student s = repo.save(build("A", "a@test.com", true));
+        s.setFullName("Changed");
+        // Falta repo.save(s)
+        assertThat(s.getFullName()).isEqualTo("Changed");
+    }
+    */
+
     // -------------------------------------------------------
-    // 12. EMAIL MATCH EXACTO (no ignora mayúsculas)
+    // 11. CASE SENSITIVITY
     // -------------------------------------------------------
     @Test
     void shouldNotMatchEmailWithDifferentCase() {
@@ -197,4 +306,12 @@ class StudentRepositoryTest {
 
         assertThat(result).isNotPresent();
     }
+
+    /*
+    @Test // ❌ INCORRECTO → Esto NUNCA debería funcionar
+    void wrongCaseInsensitiveTest() {
+        repo.save(build("Case", "case@test.com", true));
+        assertThat(repo.findByEmail("CASE@test.com")).isPresent();
+    }
+    */
 }
