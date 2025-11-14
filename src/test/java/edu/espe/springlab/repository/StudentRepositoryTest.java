@@ -1,7 +1,9 @@
 package edu.espe.springlab.repository;
 
+import edu.espe.springlab.TestLogger;
 import edu.espe.springlab.domain.Student;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -12,6 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@ExtendWith(TestLogger.class)   //  <<--- AQUI SE ACTIVAN LOS MENSAJES
 class StudentRepositoryTest {
 
     @Autowired
@@ -26,22 +29,15 @@ class StudentRepositoryTest {
         return s;
     }
 
-    // -------------------------------------------------------
-    // SAVE + FIND BY EMAIL
-    // -------------------------------------------------------
     @Test
     void shouldSaveAndFindByEmail() {
         repo.save(build("Test User", "test@mail.com", true));
-
         var result = repo.findByEmail("test@mail.com");
 
         assertThat(result).isPresent();
         assertThat(result.get().getFullName()).isEqualTo("Test User");
     }
 
-    // -------------------------------------------------------
-    // EXISTS BY EMAIL
-    // -------------------------------------------------------
     @Test
     void shouldReturnTrueIfEmailExists() {
         repo.save(build("User A", "exists@mail.com", true));
@@ -58,9 +54,6 @@ class StudentRepositoryTest {
         assertThat(exists).isFalse();
     }
 
-    // -------------------------------------------------------
-    // FIND BY ID
-    // -------------------------------------------------------
     @Test
     void shouldFindById() {
         Student saved = repo.save(build("User", "id@mail.com", true));
@@ -71,9 +64,6 @@ class StudentRepositoryTest {
         assertThat(found.get().getEmail()).isEqualTo("id@mail.com");
     }
 
-    // -------------------------------------------------------
-    // FIND ALL
-    // -------------------------------------------------------
     @Test
     void shouldFindAllStudents() {
         repo.save(build("A", "a@mail.com", true));
@@ -84,9 +74,6 @@ class StudentRepositoryTest {
         assertThat(list).hasSize(2);
     }
 
-    // -------------------------------------------------------
-    // DELETE BY ID
-    // -------------------------------------------------------
     @Test
     void shouldDeleteById() {
         Student saved = repo.save(build("User", "delete@mail.com", true));
@@ -96,22 +83,13 @@ class StudentRepositoryTest {
         assertThat(repo.findById(saved.getId())).isNotPresent();
     }
 
-    // -------------------------------------------------------
-    // COUNT ACTIVE / INACTIVE
-    // -------------------------------------------------------
-
-
-    // -------------------------------------------------------
-    // EMAIL ÚNICO (muy común en examen)
-    // -------------------------------------------------------
     @Test
     void shouldNotAllowDuplicatedEmail() {
         repo.save(build("First", "dup@mail.com", true));
 
         Student duplicated = build("Second", "dup@mail.com", true);
 
-        assertThatThrownBy(() -> {
-            repo.saveAndFlush(duplicated);
-        }).isInstanceOf(Exception.class); // ConstraintViolationException / DataIntegrityViolationException
+        assertThatThrownBy(() -> repo.saveAndFlush(duplicated))
+                .isInstanceOf(Exception.class);
     }
 }
