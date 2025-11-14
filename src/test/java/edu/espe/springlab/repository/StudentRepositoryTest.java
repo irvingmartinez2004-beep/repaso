@@ -169,12 +169,12 @@ class StudentRepositoryTest {
         assertThat(repo.findById(s.getId())).isNotPresent();
     }
 
-    /*
+
     @Test // ❌ INCORRECTO → No se elimina nada
     void wrongDeleteWithoutSaving() {
         repo.deleteById(1L);
     }
-    */
+
 
     // -------------------------------------------------------
     // 7. UNIQUE EMAIL
