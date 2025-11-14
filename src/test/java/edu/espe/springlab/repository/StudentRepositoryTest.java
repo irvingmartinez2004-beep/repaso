@@ -169,12 +169,12 @@ class StudentRepositoryTest {
         assertThat(repo.findById(s.getId())).isNotPresent();
     }
 
-
+    /*
     @Test // ❌ INCORRECTO → No se elimina nada
     void wrongDeleteWithoutSaving() {
         repo.deleteById(1L);
     }
-
+    */
 
     // -------------------------------------------------------
     // 7. UNIQUE EMAIL
@@ -189,13 +189,13 @@ class StudentRepositoryTest {
                 .isInstanceOf(Exception.class);
     }
 
-    /*
+
     @Test // ❌ INCORRECTO → Aquí no hacemos flush y podría NO fallar
     void wrongDuplicateTest() {
         repo.save(build("A", "x@test.com", true));
         repo.save(build("B", "x@test.com", true)); // Esto a veces NO lanza error
     }
-    */
+
 
     // -------------------------------------------------------
     // 8. VALIDACIONES DE CAMPOS NULL
